@@ -58,7 +58,7 @@ python main.py \
   --label_smoothing=0.0 \
   --learning_rate=0.0001 \
   --noam_decay=False \
-  --model_dir=$SAVED_MODEl_DIR \
+  --model_dir=$SAVED_MODEL_DIR \
   --moses_bleu_script=$MOSES_BLEU \
   --only_infer=False
 
