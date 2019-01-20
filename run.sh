@@ -21,8 +21,8 @@ PRETRAINED_EMB=$MONO_PATH/all.$SRC-$TGT.$CODES.vec
 SRC_TRAIN_BPETOK=$MONO_PATH/all.$SRC.tok.$CODES
 TGT_TRAIN_BPETOK=$MONO_PATH/all.$TGT.tok.$CODES
 
-SRC_TEST_BPETOK=$PARA_PATH/dev/newstest2014-fren-src.fr.$CODES
-TGT_TEST_BPETOK=$PARA_PATH/dev/newstest2014-fren-src.en.$CODES
+SRC_TEST_BPETOK=$PARA_PATH/dev/newstest2014-fren-src.en.$CODES
+TGT_TEST_BPETOK=$PARA_PATH/dev/newstest2014-fren-src.fr.$CODES
 SRC_TEST_REF=$PARA_PATH/dev/newstest2014-fren-src.en
 TGT_TEST_REF=$PARA_PATH/dev/newstest2014-fren-src.fr
 
