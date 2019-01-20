@@ -1,5 +1,19 @@
 #!/bin/bash
 
+UMT_PATH=$PWD
+TOOLS_PATH=$PWD/tools
+
+mkdir -p $TOOLS_PATH
+
+MOSES=$TOOLS_PATH/mosesdecoder
+
+cd $TOOLS_PATH
+if [ ! -d "$MOSES" ]; then
+  echo "Cloning Moses from GitHub repository..."
+  git clone https://github.com/moses-smt/mosesdecoder.git
+fi
+echo "Moses found in: $MOSES"
+
 # 1LPx1aVraBPpogRZXuttSb-1B4IkGuJ9m
 
 echo "Downloading prepared enfr data..."

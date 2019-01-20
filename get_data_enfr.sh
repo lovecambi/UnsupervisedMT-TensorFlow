@@ -290,7 +290,7 @@ echo "Cross-lingual embeddings in: $CONCAT_BPE.vec"
 #
 # Prepare vocab file for TensorFlow
 #
-if ! [[ -f "$SRC_VOCAB" && -f "$TGT_VOCAB" && -f "$FULL_VOCAB" ]]; then
+if ! [[ -f "$SRC_VOCAB.tf" && -f "$TGT_VOCAB.tf" && -f "$FULL_VOCAB.tf" ]]; then
   echo "Build vocab files for TensorFLow by removing number and adding <s>, </s>, <unk>, <mask>."
   echo -e "<s> 0\n</s> 1\n<unk> 2\n<mask> 3" | cat - $SRC_VOCAB | cut -d' ' -f1 > $SRC_VOCAB.tf 
   echo -e "<s> 0\n</s> 1\n<unk> 2\n<mask> 3" | cat - $TGT_VOCAB | cut -d' ' -f1 > $TGT_VOCAB.tf 
