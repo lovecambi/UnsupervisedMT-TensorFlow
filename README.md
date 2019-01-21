@@ -48,7 +48,7 @@ The hyperparameter in `run.sh` are almost identical to the [UnsupervisedMT-Pytor
 On newstest2014 en-fr, the above command should give about 23.0 BLEU after 100K steps training on a P100.
 
 ## TODO
-* Supervised Training
+* Mixed Data Loader (for training monoligual and parallel datasets together)
 * Multi-GPUs Training
 * Beam Search
 
