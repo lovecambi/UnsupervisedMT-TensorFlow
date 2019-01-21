@@ -18,48 +18,11 @@ from model import unmt, misc_utils, common_layers
 
 class TrainerMT(unmt.UNMT):
     """
-    TODO: change to FB PyTorch code model update logic?
-    The behavior of adam optimizer matters a lot.
-    1. Define: enc_optimizer and dec_optimizer
-    2. One train step includes:
-        # ae train step
-        for lang in langs:
-            update enc params
-            update dec params
-
-        # bt train step
-        for lang1, lang2 in lang_pairs:
-            update enc params
-            update dec params
-
-    Similar TensorFlow code logic:
-    One train step:
-        clean_inputs = data_generator()  # clean_inputs = {"lang1": clean_input1, "lang2": clean_input2}
-        noise_inputs = add_noise(clean_inputs)
-
-        # ae training
-        for lang in langs:
-            train_sess.run([enc_train_op, dec_train_op, ...],
-                            feed_dict={
-                                noise_input: noise_inputs[lang],
-                                clean_input: clean_inputs[lang]})
-
-        clean_inputs = data_generator()
-        # bt inference
-        bt_1to2, bt_2to1 = eval_sess.run([...],
-                                         feed_dict={
-                                            clean_input1: clean_inputs["lang1"],
-                                            clean_input2: clean_inputs["lang2"]})
-
-        bt_res = {"lang1": bt_2to1, "lang2": bt_1to2}
-
-        # bt training
-        for lang1, lang2 in lang_paris:
-            train_sess.run([enc_train_op, dec_train_op, ...],
-                            feed_dict={
-                                noise_input: bt_res[lang1],
-                                clean_input: clean_inputs[lang2]})
-
+    TODO: FB PyTorch code uses aysnchronous back translaton generation.
+    e.g., a minimal description
+    thread 0: continously generate back translation, synchronize the model every 1K training steps.
+    thread 1: continously training for ae and bt losses, don't take care of generation.
+    Need to figure it out in TensorFlow.
     """
 
     def __init__(self,
@@ -233,13 +196,32 @@ class TrainerMT(unmt.UNMT):
                 learning_rate_warmup_steps=params["learning_rate_warmup_steps"],
                 noam_decay=params["noam_decay"])
 
-            self.ae_train_op = get_train_op_and_metrics(
-                self.lambda_xe * self.ae_loss,
-                self.learning_rate, self.global_step, tvars, params, igs=False)
-            self.bt_train_op = get_train_op_and_metrics(
-                self.lambda_xe * self.bt_loss,
-                self.learning_rate, self.global_step, tvars, params, igs=True)
+            optimizer = tf.contrib.opt.LazyAdamOptimizer(
+                self.learning_rate,
+                beta1=params["optimizer_adam_beta1"],
+                beta2=params["optimizer_adam_beta2"],
+                epsilon=params["optimizer_adam_epsilon"])
 
+            self.ae_train_op = tf.contrib.layers.optimize_loss(
+                self.lambda_xe * self.ae_loss,
+                self.global_step,
+                learning_rate=None,
+                optimizer=optimizer,
+                variables=tvars,
+                clip_gradients=params["clip_grad_norm"],
+                colocate_gradients_with_ops=True,
+                increment_global_step=False)
+            
+            self.bt_train_op = tf.contrib.layers.optimize_loss(
+                self.lambda_xe * self.bt_loss,
+                self.global_step,
+                learning_rate=None,
+                optimizer=optimizer,
+                variables=tvars,
+                clip_gradients=params["clip_grad_norm"],
+                colocate_gradients_with_ops=True,
+                increment_global_step=True)
+ 
             self.train_ae_summary = tf.summary.merge([tf.summary.scalar("lr", self.learning_rate),
                                                       tf.summary.scalar("ae_loss", self.ae_loss)])
             self.train_bt_summary = tf.summary.merge([tf.summary.scalar("lr", self.learning_rate),
@@ -285,37 +267,6 @@ class TrainerMT(unmt.UNMT):
                          self.sample_ids_2to1],
                         feed_dict={self.infer_input1: ii1,
                                    self.infer_input2: ii2})
-
-
-def get_train_op_and_metrics(loss, learning_rate, global_step, tvars, params, igs=True):
-    """Generate training op and metrics to save in TensorBoard."""
-    # Create optimizer. Use LazyAdamOptimizer from TF contrib, which is faster
-    # than the TF core Adam optimizer.
-    optimizer = tf.contrib.opt.LazyAdamOptimizer(
-        learning_rate,
-        beta1=params["optimizer_adam_beta1"],
-        beta2=params["optimizer_adam_beta2"],
-        epsilon=params["optimizer_adam_epsilon"])
-
-    # Calculate and apply gradients using LazyAdamOptimizer.
-    # gradients = optimizer.compute_gradients(
-    #     loss, tvars, colocate_gradients_with_ops=True)
-    # minimize_op = optimizer.apply_gradients(
-    #     gradients, global_step=global_step)
-    # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    # train_op = tf.group(minimize_op, update_ops)
-
-    train_op = tf.contrib.layers.optimize_loss(
-        loss,
-        global_step,
-        learning_rate=None,
-        optimizer=optimizer,
-        variables=tvars,
-        clip_gradients=params["clip_grad_norm"],
-        colocate_gradients_with_ops=True,
-        increment_global_step=igs)
-
-    return train_op
 
 
 def add_summary(summary_writer, global_step, tag, value):
