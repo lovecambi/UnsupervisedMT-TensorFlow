@@ -45,7 +45,10 @@ cd UnsupervisedMT-TensorFlow
 
 The hyperparameter in `run.sh` are almost identical to the [UnsupervisedMT-Pytorch](https://github.com/facebookresearch/UnsupervisedMT) except the `batch_size=2048` which is a token level batch size.
 
-On newstest2014 en-fr, the above command should give about 23.0 BLEU after 100K steps training on a P100.
+On newstest2014 en-fr, the above command should give more than 22 BLEU after 100K steps training on a P100 (similar to Pytorch code).
+
+### Main Implementation Difference
+In our code, the gradient of each update is computed by the summed loss from both directions: lang1 <-> lang2, while Pytorch code updates twice with the loss of each direction. 
 
 ## TODO
 * Mixed Data Loader (for training monoligual and parallel datasets together)
