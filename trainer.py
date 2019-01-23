@@ -86,7 +86,7 @@ class TrainerMT(unmt.UNMT):
         super(TrainerMT, self).__init__(params=params, mode=mode, eos_id=eos_id)
 
         # start to build model, train_op and saver
-        self.global_step = tf.Variable(0, trainable=False)
+        self.global_step = tf.Variable(0, trainable=False, name="global_step")
         res = self.build_model(params)
         self._set_train_or_infer(res, reverse_vocab_tables, params)
         self.saver = tf.train.Saver(
