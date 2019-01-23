@@ -239,6 +239,11 @@ def create_or_load_model(model, model_dir, session, name):
         session.run(tf.tables_initializer())
         utils.print_out("  created %s model with fresh parameters, time %.2fs" %
                         (name, time.time() - start_time))
+        model.saver.save(
+            session,
+            os.path.join(model_dir, "model.ckpt"),
+            global_step=0)
+        utils.print_out("# Save model at global step 0, for initial eval/infer.")
 
     global_step = model.global_step.eval(session=session)
     return model, global_step
