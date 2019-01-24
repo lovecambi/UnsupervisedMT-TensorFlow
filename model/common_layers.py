@@ -39,7 +39,6 @@ def transformer_prepare_encoder(x, embeddings, name):
         x_emb = get_embedding(x, embeddings)
         x_pad = get_padding(x)
         att_bias = attention_bias_ignore_padding(x_pad)
-        x_emb = add_timing_signal_1d(x_emb)
         return x_emb, att_bias, x_pad
 
 
@@ -48,7 +47,6 @@ def transformer_prepare_decoder(x, embeddings, name):
         x_emb = get_embedding(shift_right_2d(x), embeddings)
         att_bias = get_decoder_self_attention_bias(
             shape_list(x_emb)[1])
-        x_emb = add_timing_signal_1d(x_emb)
         return x_emb, att_bias
 
 

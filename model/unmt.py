@@ -87,6 +87,10 @@ class UNMT(object):
         """
         e_emb, e_attn_bias, e_pad = common_layers.transformer_prepare_encoder(
             e_input, self.encoder_embeddings[lang], "%s_prepare_encoder" % lang)
+       
+        e_emb *= self.params["hidden_size"] ** 0.5
+
+        e_emb = common_layers.add_timing_signal_1d(e_emb)
 
         if self.is_training:
             e_emb = tf.nn.dropout(e_emb, 1.0 - self.params["prepostprocess_dropout"])
@@ -110,6 +114,10 @@ class UNMT(object):
         """
         d_emb, d_attn_bias = common_layers.transformer_prepare_decoder(
             d_input, self.decoder_embeddings[lang], "%s_prepare_decoder" % lang)
+
+        d_emb *= self.params["hidden_size"] ** 0.5
+
+        d_emb = common_layers.add_timing_signal_1d(d_emb)
 
         if self.is_training:
             d_emb = tf.nn.dropout(d_emb, 1.0 - self.params["prepostprocess_dropout"])
@@ -166,6 +174,7 @@ class UNMT(object):
 
             # Preprocess decoder input by getting embeddings and adding timing signal.
             decoder_input = tf.gather(self.decoder_embeddings[lang], decoder_input)
+            decoder_input *= self.params["hidden_size"] ** 0.5
             decoder_input += timing_signal[:, i:i + 1]
 
             if self.is_training:
