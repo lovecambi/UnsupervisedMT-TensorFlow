@@ -211,7 +211,7 @@ class UNMT(object):
         e_output_shape = common_layers.shape_list(e_output)
         batch_size = e_output_shape[0]
         input_length = e_output_shape[1]
-        max_decode_length = tf.cast(1.5 * tf.to_float(input_length), tf.int32)
+        max_decode_length = tf.cast(1.5 * tf.to_float(input_length), tf.int32) + 10
 
         symbols_to_logits_fn = self._get_symbols_to_logits_fn(max_decode_length, lang2)
 
