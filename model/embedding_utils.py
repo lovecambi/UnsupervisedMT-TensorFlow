@@ -63,7 +63,8 @@ def _create_embed(embed_name, vocab_size, embed_size, dtype, emb_np=None):
                 trainable=True)
         else:
             embedding = tf.get_variable(
-                embed_name, [vocab_size, embed_size], dtype)
+                embed_name, [vocab_size, embed_size], dtype,
+                initializer=tf.random_normal_initializer(0., embed_size ** -0.5))
     return embedding
 
 

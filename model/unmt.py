@@ -95,11 +95,11 @@ class UNMT(object):
         if self.is_training:
             e_emb = tf.nn.dropout(e_emb, 1.0 - self.params["prepostprocess_dropout"])
 
-        with tf.variable_scope("shared_encode", reuse=tf.AUTO_REUSE):
-            e_emb = self.share_enc_stack(e_emb, e_attn_bias, e_pad)
-
         with tf.variable_scope("%s_encode" % lang, reuse=tf.AUTO_REUSE):
-            e_output = self.enc_stack[lang](e_emb, e_attn_bias, e_pad)
+            e_emb = self.enc_stack[lang](e_emb, e_attn_bias, e_pad)
+
+        with tf.variable_scope("shared_encode", reuse=tf.AUTO_REUSE):
+            e_output = self.share_enc_stack(e_emb, e_attn_bias, e_pad)
 
         return e_output, e_attn_bias
 
