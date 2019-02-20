@@ -363,11 +363,15 @@ class SharedEncoderStack(tf.layers.Layer):
         for _ in range(params["share_enc"]):
             self.layers.append(TransformerEncoderLayer(params, is_training))
 
+        # Create final layer normalization layer, but FB code does not have it.
+        #self.output_normalization = LayerNormalization(params["hidden_size"])
+
     def call(self, encoder_inputs, attention_bias, inputs_padding):
         for n, layer in enumerate(self.layers):
             with tf.variable_scope("share_layer_%d" % n):
                 encoder_inputs = layer(encoder_inputs, attention_bias, inputs_padding)
 
+        #return self.output_normalization(encoder_inputs)
         return encoder_inputs
 
 
@@ -380,15 +384,12 @@ class EncoderStack(tf.layers.Layer):
         for _ in range(params["n_enc_layers"] - params["share_enc"]):
             self.layers.append(TransformerEncoderLayer(params, is_training))
 
-        # Create final layer normalization layer.
-        self.output_normalization = LayerNormalization(params["hidden_size"])
-
     def call(self, encoder_inputs, attention_bias, inputs_padding):
         for n, layer in enumerate(self.layers):
             with tf.variable_scope("layer_%d" % n):
                 encoder_inputs = layer(encoder_inputs, attention_bias, inputs_padding)
 
-        return self.output_normalization(encoder_inputs)
+        return encoder_inputs
 
 
 class TransformerDecoderLayer(tf.layers.Layer):
@@ -462,7 +463,8 @@ class DecoderStack(tf.layers.Layer):
         for _ in range(params["n_dec_layers"] - params["share_dec"]):
             self.layers.append(TransformerDecoderLayer(params, is_training))
 
-        self.output_normalization = LayerNormalization(params["hidden_size"])
+        # not included in FB code
+        # self.output_normalization = LayerNormalization(params["hidden_size"])
 
     def call(self, decoder_inputs, encoder_outputs, decoder_self_attention_bias,
              attention_bias, cache=None):
@@ -477,7 +479,8 @@ class DecoderStack(tf.layers.Layer):
                     attention_bias,
                     cache=layer_cache)
 
-        return self.output_normalization(decoder_inputs)
+        return decoder_inputs
+        #return self.output_normalization(decoder_inputs)
 
 
 
