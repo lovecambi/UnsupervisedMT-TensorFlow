@@ -364,15 +364,14 @@ class SharedEncoderStack(tf.layers.Layer):
             self.layers.append(TransformerEncoderLayer(params, is_training))
 
         # Create final layer normalization layer, but FB code does not have it.
-        #self.output_normalization = LayerNormalization(params["hidden_size"])
+        self.output_normalization = LayerNormalization(params["hidden_size"])
 
     def call(self, encoder_inputs, attention_bias, inputs_padding):
         for n, layer in enumerate(self.layers):
             with tf.variable_scope("share_layer_%d" % n):
                 encoder_inputs = layer(encoder_inputs, attention_bias, inputs_padding)
 
-        #return self.output_normalization(encoder_inputs)
-        return encoder_inputs
+        return self.output_normalization(encoder_inputs)
 
 
 class EncoderStack(tf.layers.Layer):
@@ -464,7 +463,7 @@ class DecoderStack(tf.layers.Layer):
             self.layers.append(TransformerDecoderLayer(params, is_training))
 
         # not included in FB code
-        # self.output_normalization = LayerNormalization(params["hidden_size"])
+        self.output_normalization = LayerNormalization(params["hidden_size"])
 
     def call(self, decoder_inputs, encoder_outputs, decoder_self_attention_bias,
              attention_bias, cache=None):
@@ -479,8 +478,7 @@ class DecoderStack(tf.layers.Layer):
                     attention_bias,
                     cache=layer_cache)
 
-        return decoder_inputs
-        #return self.output_normalization(decoder_inputs)
+        return self.output_normalization(decoder_inputs)
 
 
 
